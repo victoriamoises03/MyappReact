@@ -1,59 +1,108 @@
-import { StatusBar } from 'expo-status-bar';
-import {auth} from "./src/firebase/config"
-
-
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { auth } from './src/firebase/config';
+import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; //  iconos
 
 
 import Register from './src/screens/Register/Register';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
-const Stack = createNativeStackNavigator();
+import PostForm from './src/screens/PostForm/PostForm';
 
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function TabNavigator() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="HOME"
+        component={Home}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Crear Post"
+        component={PostForm}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="plus" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default function App() {
-  function register(email, pass){
-    auth.createUserWithEmailAndPassword(email, pass)
-    .then(response =>{
-      this.setState({registered: true});
-    })
-    .catch(error => {
-      this.setState({error: 'Fallo en el registro.'})
-    })
-  }
-  function login (email,pass){
-    auth.signInWithEmailAndPassword(email, pass)
-    .then(response =>{
-      this.setState({loggedIn: true});
-    })
-    .catch(error => {
-      this.setState({error: 'Credenciales invalidas.'})
-    })
-  }
+  const [user, setUser] = useState(null);
 
-  
-    return (
-      <NavigationContainer style={styles.container}>
-        <Stack.Navigator>
-          <Stack.Screen name='Registro' component={Register} options={ { headerShown: false } }/>
-          <Stack.Screen name='Login' component={Login} options={ { headerShown: false } }/>
-          <Stack.Screen name='Home' component={Home} options={ { headerShown: false } }/>
-          {/* Si implementamos tabnavigation para el resto de la app. El tercer componente debe ser una navegación que tenga a Home como primer screen */}
-        </Stack.Navigator>
-      </NavigationContainer>
+  useEffect(() => {
+    // Intenta recuperar el estado de autenticación desde AsyncStorage.
+    const checkRememberMe = async () => {
+      try {
+        const rememberMe = await AsyncStorage.getItem('rememberMe');
+        if (rememberMe === 'true') {
+          // El usuario recordó su sesión anterior, verifica si están autenticados en Firebase.
+          const firebaseUser = auth.currentUser;
+          if (firebaseUser) {
+            setUser(firebaseUser); // Usuario autenticado, actualiza el estado.
+          }
+        }
+      } catch (error) {
+        console.error('Error al recuperar el estado de Remember Me: ', error);
+      }
+    };
 
-  );
-  
+    checkRememberMe();
+
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser); // Usuario autenticado, actualiza el estado.
+      } else {
+        setUser(null); // Usuario no autenticado, actualiza el estado.
+      }
+    });
+
+    // Limpia el observador cuando el componente se desmonta.
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer style={styles.container}>
+      <Stack.Navigator>
+        {user ? (
+          // Usuario autenticado, muestra el menú de pestañas.
+          <Stack.Screen
+            name="Inicio"
+            component={TabNavigator}
+            options={{ headerShown: false }}
+          />
+        ) : (
+          // Usuario no autenticado, muestra las pantallas de autenticación.
+          <>
+            <Stack.Screen
+              name="Registro"
+              component={Register}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
+           
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-
 }
 
 const styles = StyleSheet.create({
