@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import {auth} from "./src/firebase/config"
 
+
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -11,6 +12,7 @@ import Register from './src/screens/Register/Register';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
 const Stack = createNativeStackNavigator();
+
 
 export default function App() {
   function register(email, pass){
@@ -31,6 +33,7 @@ export default function App() {
       this.setState({error: 'Credenciales invalidas.'})
     })
   }
+
   
     return (
       <NavigationContainer style={styles.container}>
@@ -44,6 +47,14 @@ export default function App() {
 
   );
   
+
+  return (
+    <View style={styles.container}>
+      <Text>Open up App.js to start working on your app!</Text>
+      <StatusBar style="auto" />
+    </View>
+  );
+
 }
 
 const styles = StyleSheet.create({

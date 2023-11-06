@@ -9,15 +9,22 @@
     "web": "expo start --web"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@expo/webpack-config": "^19.0.0",
     "@react-navigation/native-stack": "^6.9.17",
+=======
+>>>>>>> 2a72b0ad491594a957231f03b4a3a4a58aea7e0a
     "expo": "~49.0.13",
     "expo-status-bar": "~1.6.0",
     "firebase": "^8.10.1",
     "react": "18.2.0",
+<<<<<<< HEAD
     "react-dom": "^18.2.0",
     "react-native": "0.72.5",
     "react-native-web": "~0.19.6"
+=======
+    "react-native": "0.72.5"
+>>>>>>> 2a72b0ad491594a957231f03b4a3a4a58aea7e0a
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
