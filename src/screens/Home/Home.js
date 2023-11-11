@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { auth, db } from '../../firebase/config';
+import Post from '../../components/Post/Post'
 
 class Home extends Component {
   constructor() {
     super();
     this.state = {
-      posts: [],
+      posteos: [],
     };
   }
 
@@ -19,7 +20,8 @@ class Home extends Component {
           id: doc.id,
           data: doc.data(),
         }));
-        this.setState({ posts });
+        this.setState({ 
+          posteos: posts});
       });
   }
 
@@ -33,33 +35,11 @@ class Home extends Component {
           <Text>Logout</Text>
         </TouchableOpacity>
 
+
         <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.postContainer}>
-              <Text style={styles.username}>{item.data.username}</Text>
-              <Image source={{ uri: item.data.imageUrl }} style={styles.postImage} />
-              <Text style={styles.likesCount}>{item.data.likes} Likes</Text>
-              <Text style={styles.commentsCount}>Comments: {item.data.comments}</Text>
-              <TouchableOpacity
-                style={styles.likeButton}
-                onPress={() => {
-                  // Agrega lógica para dar like o deslike a la publicación
-                }}
-              >
-                <Text>Like</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.commentsButton}
-                onPress={() => {
-                  // Redirige a la página de comentarios
-                }}
-              >
-                <Text>View Comments</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          data={this.state.posteos}
+          keyExtractor={(onePost) => onePost.id.toString()}
+          renderItem={({ item }) => <Post postData ={item} />}
         />
       </View>
     );
