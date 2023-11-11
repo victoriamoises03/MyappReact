@@ -16,8 +16,6 @@ class Posteo extends Component {
 
     //Chequear que si ya tengo el puessto el like o no tengo puesto el like//
 
-       
-
 componentDidMount(){
     if(this.props.postData.data.likes.includes(auth.currentUser.email)){
         this.setState({
@@ -91,8 +89,8 @@ render() {
 <       View>
  
 
-<Image style={styles.imagen} source={{ uri: this.props.postData.data.image }} resizeMode='cover' />
-
+<Image style={styles.imagen} source={{ uri: this.props.postData.data.imageurl }} resizeMode='cover' />
+<Text style> {this.props.posteoData.data.description} </Text>
 
 {this.state.propioLike ? 
 
