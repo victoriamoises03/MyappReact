@@ -1,7 +1,7 @@
 import Reac, {Component} from "react";
 import { Text, View, TouchableOpacity, StyleSheet, Image, FlatList} from "react-native";
 import firebase from "firebase"
-import {auth , db} from "../firebase/config"
+import {auth , db} from "../../firebase/config"
 
 
 class Posteo extends Component { 
@@ -112,7 +112,7 @@ render() {
 <FlatList
           data={this.state.comentarios.slice(0, 3)}
           keyExtractor={(oneComent) => oneComent.id.toString()}
-          renderItem={({ item }) => <Text> {item.userName} : <Text> {item.comentario}  </Text>  </Text>/>}
+          renderItem={({ item }) => <Text> {item.userName} : <Text>{item.comentario}</Text> </Text>}
         />
         </View>
 
