@@ -15,7 +15,19 @@ class Profile extends Component {
   componentDidMount() {
     this.unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        this.setState({ user });
+        // Realiza una consulta a la base de datos para obtener el nombre de usuario
+        db.collection('users')
+          .doc(user.uid)
+          .get()
+          .then((userDoc) => {
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              this.setState({ user: { ...user, userName: userData.userName } });
+            }
+          })
+          .catch((error) => {
+            console.error('Error al obtener el nombre de usuario:', error.message);
+          });
 
         // Consultar la base de datos para obtener los posteos del usuario actual
         db.collection('posts')
@@ -41,7 +53,8 @@ class Profile extends Component {
   }
 
   handleLogout = () => {
-    auth.signOut()
+    auth
+      .signOut()
       .then(() => {
         // Logout exitoso, redirigir al usuario a la pantalla de login
         this.props.navigation.navigate('Login');
@@ -53,7 +66,9 @@ class Profile extends Component {
 
   handleDeletePost = (postId) => {
     // Lógica para eliminar el posteo
-    db.collection('posts').doc(postId).delete()
+    db.collection('posts')
+      .doc(postId)
+      .delete()
       .then(() => {
         console.log('Posteo eliminado correctamente');
       })
@@ -66,17 +81,21 @@ class Profile extends Component {
     const { user, userPosts } = this.state;
 
     return (
-      <View>
+      <View style={styles.container}>
         {user && (
-          <View>
-            <Text>Nombre de usuario: {user.userName}</Text>
-            <Text>Email: {user.email}</Text>
-            {user.photoURL && <Image source={{ uri: user.photoURL }} style={styles.profileImage} />}
-            {user.bio && <Text>Mini Bio: {user.bio}</Text>}
-            <Text>Cantidad total de posteos: {userPosts.length}</Text>
+          <View style={styles.userInfoContainer}>
+            <Image
+              source={{ uri: user.photoURL }}
+              style={styles.profileImage}
+            />
+            <Text style={styles.usernameText}>Nombre de usuario: {user.userName}</Text>
+            <Text style={styles.emailText}>Email: {user.email}</Text>
+            <Text style={styles.postCountText}>
+              Cantidad total de posteos: {userPosts.length}
+            </Text>
 
-            <TouchableOpacity onPress={this.handleLogout}>
-              <Text>Logout</Text>
+            <TouchableOpacity style={styles.logoutButton} onPress={this.handleLogout}>
+              <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -98,11 +117,44 @@ class Profile extends Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  userInfoContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   profileImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
     marginVertical: 10,
+  },
+  usernameText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  emailText: {
+    fontSize: 16,
+    marginVertical: 5,
+  },
+  postCountText: {
+    fontSize: 16,
+    marginVertical: 5,
+  },
+  logoutButton: {
+    backgroundColor: '#3498db',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 
