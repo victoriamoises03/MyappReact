@@ -34,8 +34,6 @@ class Home extends Component {
         <TouchableOpacity onPress={() => auth.signOut()}>
           <Text>Logout</Text>
         </TouchableOpacity>
-
-
         <FlatList
           data={this.state.posteos}
           keyExtractor={(onePost) => onePost.id.toString()}

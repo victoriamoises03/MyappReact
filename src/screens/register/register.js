@@ -77,7 +77,7 @@ class Register extends Component {
         <TextInput
           style={styles.input}
           onChangeText={(text) => this.setState({ userName: text })}
-          placeholder='User Name'
+          placeholder='UserName'
           keyboardType='default'
           value={this.state.userName}
         />

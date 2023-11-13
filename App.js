@@ -11,6 +11,7 @@ import Register from './src/screens/Register/Register';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
 import PostForm from './src/screens/PostForm/PostForm';
+import Profile from './src/screens/Profile/Profile';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -19,7 +20,7 @@ function TabNavigator() {
   return (
     <Tab.Navigator>
       <Tab.Screen
-        name="HOME"
+        name="Home"
         component={Home}
         options={{
           tabBarIcon: ({ color, size }) => (
@@ -36,7 +37,17 @@ function TabNavigator() {
           ),
         }}
       />
+      <Tab.Screen
+        name="Mi perfil"
+        component={Profile}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user" color={color} size={size} />
+          ),
+        }}
+        />
     </Tab.Navigator>
+    
   );
 }
 
