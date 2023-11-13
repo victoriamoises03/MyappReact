@@ -2,91 +2,83 @@ import React, { Component } from 'react';
 import { TextInput, TouchableOpacity, View, Text, StyleSheet, Image } from 'react-native';
 import { auth, db } from '../../firebase/config';
 
-//Importamos camara//
-
-import Camara from "../../components/Camara/Camara"
-
+// Importamos la cámara
+import Camara from "../../components/Camara/Camara";
 
 class PostForm extends Component {
   constructor() {
     super();
     this.state = {
-      imagen: "",
+      imageUrl: "",  // Corregido a "imageUrl"
       description: "",
       createdAt: "",
-      showCamera: true, 
+      showCamera: true,
       likes: [],
-      comentarios: [],
+      comments: [],  // Corregido a "comments"
     };
   }
 
-
   createPost() {
-
     db.collection("posts").add({
       email: auth.currentUser.email,
-      imagen: this.state.imagen,
+      imageUrl: this.state.imageUrl,  // Corregido a "imageUrl"
       description: this.state.description,
       likes: [],
-      comentarios: [],
-      createdAt: Date.now()
-    }).then(()=>{
+      comments: [],
+      createdAt: new Date(),
+    })
+    .then(() => {
       this.setState({
         description: "",
-        imagen: "", 
+        imageUrl: "",  // Corregido a "imageUrl"
         createdAt: "",
         showCamera: true,
         likes: [],
-        comentarios: [],
-      })
-      this.props.navigation.navigate("Home")
-    }).catch(error)
+        comments: [],
+      });
+
+      this.props.navigation.navigate("Home");
+    })
+    .catch(error => {
+      console.error("Error al crear el posteo:", error);
+    });
   }
 
+  onImageUpload(url) {
+    this.setState({
+      imageUrl: url,  // Corregido a "imageUrl"
+      showCamera: false,
+    });
+  }
 
-onImageUpload(url){
-  this.setState({
-    imagen: url,
-    showCamera: false,
-  })
-}
-
-
-
-render(){
-
-  return (
-<View>
-      <Text>
-        Hacé un posteo nuevo!
-      </Text>
-
+  render() {
+    return (
       <View>
-        
-        {
-          this.state.showCamera ? 
-            <Camara onImageUpload={url => this.onImageUpload(url)}  />
-: 
-    <View>
-    <TextInput
-              placeholder='Agrega una descripcion'
-              keyboardType='default'
-              onChangeText={(text) => this.setState({ description: text })}
-              value={this.state.description}
-            />
+        <Text>
+          Hacé un posteo nuevo!
+        </Text>
 
-    <TouchableOpacity onPress={() => this.createPost()}>
-      Postear
-    </TouchableOpacity>
-    </View>
-  
+        <View>
+          {this.state.showCamera ? (
+            <Camara onImageUpload={url => this.onImageUpload(url)} />
+          ) : (
+            <View>
+              <TextInput
+                placeholder='Agrega una descripción'
+                keyboardType='default'
+                onChangeText={(text) => this.setState({ description: text })}
+                value={this.state.description}
+              />
 
-    }
-    </View>
-    </View>
-  )
+              <TouchableOpacity onPress={() => this.createPost()}>
+                Postear
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  }
 }
-}
-    
 
-export default PostForm
+export default PostForm;
