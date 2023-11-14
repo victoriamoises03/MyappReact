@@ -1,10 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { db } from '../../firebase/config';
-//import { useNavigation } from '@react-navigation/native';
-
-//import { withNavigation } from 'react-navigation';
-//const navigation = useNavigation();
 
 class UserSearch extends Component {
   constructor() {
@@ -17,13 +13,13 @@ class UserSearch extends Component {
     };
   }
 
-  handleSearch = () => {
+handleSearch = () => {
     const { searchQuery } = this.state;
   
-    // Realiza la consulta a la base de datos para encontrar usuarios que coincidan con la búsqueda.
-    db.collection('posts')
-      .where('email', '>=', searchQuery)
-      .where('email', '<=', searchQuery + '\uf8ff')
+    // Realiza la consulta a la colección 'users' para encontrar usuarios que coincidan con la búsqueda.
+    db.collection('users')
+      .where('userName', '>=', searchQuery)
+      .where('userName', '<=', searchQuery + '\uf8ff')
       .get()
       .then((querySnapshot) => {
         const results = querySnapshot.docs.map((doc) => ({
@@ -34,34 +30,16 @@ class UserSearch extends Component {
         if (results.length > 0) {
           this.setState({ searchResults: results, noResults: false });
         } else {
-          // Si no hay coincidencias en 'email', buscar en 'userName'
-          db.collection('users')
-            .where('userName', '>=', searchQuery)
-            .where('userName', '<=', searchQuery + '\uf8ff')
-            .get()
-            .then((userNameQuerySnapshot) => {
-              const userNameResults = userNameQuerySnapshot.docs.map((userNameDoc) => ({
-                id: userNameDoc.id,
-                data: userNameDoc.data(),
-              }));
-  
-              if (userNameResults.length > 0) {
-                this.setState({ searchResults: userNameResults, noResults: false });
-              } else {
-                // No hay coincidencias en 'email' ni 'userName'
-                this.setState({ searchResults: [], noResults: true });
-              }
-            })
-            .catch((error) => {
-              console.error('Error al buscar usuarios por userName:', error);
-            });
+          this.setState({ searchResults: [], noResults: true });
         }
+  
+        // Agrega esta línea para limpiar la barra de búsqueda
+        this.setState({ searchQuery: '' });
       })
       .catch((error) => {
-        console.error('Error al buscar usuarios por email:', error);
+        console.error('Error al buscar usuarios por userName:', error);
       });
   };
-  
   
 
   render() {
@@ -71,7 +49,7 @@ class UserSearch extends Component {
       <View style={styles.container}>
         <TextInput
           style={styles.input}
-          placeholder="Buscar por email o userName"
+          placeholder="Buscar por userName"
           value={searchQuery}
           onChangeText={(text) => this.setState({ searchQuery: text })}
         />
@@ -82,7 +60,7 @@ class UserSearch extends Component {
         >
           <Text style={styles.searchButtonText}>Buscar</Text>
         </TouchableOpacity>
-        {noResults && <Text style={styles.noResultsText}>El email/ userName no existe.</Text>}
+        {noResults && <Text style={styles.noResultsText}>No hay usuarios que coincidan.</Text>}
         <FlatList
           data={searchResults}
           keyExtractor={(user) => user.id}
@@ -90,11 +68,11 @@ class UserSearch extends Component {
             <TouchableOpacity
               style={styles.resultItem}
               onPress={() => {
-                // Navegar al perfil del usuario,  implementar  según  enrutador
-                console.log('Ir al perfil de', item.data.userName); 
+                // Navegar al perfil del usuario, implementar según enrutador
+                console.log('Ir al perfil de', item.data.userName);
               }}
             >
-              <Text>{item.data.userName}</Text> {/* O item.data.userName según tu elección */}
+              <Text>{item.data.userName}</Text>
             </TouchableOpacity>
           )}
           keyboardShouldPersistTaps="handled"
