@@ -12,6 +12,7 @@ import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
 import PostForm from './src/screens/PostForm/PostForm';
 import Profile from './src/screens/Profile/Profile';
+import UserSearch from './src/screens/UserSearch/UserSearch';
 //import Comments from './src/screens/Comments/Comments';
 
 
@@ -48,6 +49,15 @@ function TabNavigator() {
           ),
         }}
         />
+        <Tab.Screen
+        name="Buscar Usuarios"
+        component={UserSearch}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="search" color={color} size={size} />
+          ),
+        }}
+      />
         
     </Tab.Navigator>
     

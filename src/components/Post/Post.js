@@ -1,5 +1,15 @@
 import React, { Component } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Image, FlatList, TextInput, Button, Alert } from 'react-native';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  FlatList,
+  TextInput,
+  Button,
+  Alert,
+} from 'react-native';
 import { auth, db } from '../../firebase/config';
 
 class Posteo extends Component {
@@ -8,13 +18,13 @@ class Posteo extends Component {
     this.state = {
       cantidadDeLikes: this.props.postData.data.likes.length,
       propioLike: false,
-      comments: this.props.postData.data.comments,
+      comments: this.props.postData.data.comments || [],
       newComment: '',
     };
   }
 
   componentDidMount() {
-    if (this.props.postData.data.likes.includes(auth.currentUser.email)) {
+    if (auth.currentUser && this.props.postData.data.likes.includes(auth.currentUser.email)) {
       this.setState({
         propioLike: true,
       });
@@ -22,46 +32,47 @@ class Posteo extends Component {
   }
 
   like() {
+    const { postData } = this.props;
     db.collection('posts')
-      .doc(this.props.postData.id)
+      .doc(postData.id)
       .update({
-        likes: [...this.props.postData.data.likes, auth.currentUser.email],
+        likes: [...postData.data.likes, auth.currentUser.email],
       })
       .then(() =>
-        this.setState({
-          cantidadDeLikes: this.state.cantidadDeLikes + 1,
+        this.setState((prevState) => ({
+          cantidadDeLikes: prevState.cantidadDeLikes + 1,
           propioLike: true,
-        })
+        }))
       )
       .catch((e) => console.log(e));
   }
 
   dislike() {
+    const { postData } = this.props;
     db.collection('posts')
-      .doc(this.props.postData.id)
+      .doc(postData.id)
       .update({
-        likes: this.props.postData.data.likes.filter((email) => email !== auth.currentUser.email),
+        likes: postData.data.likes.filter((email) => email !== auth.currentUser.email),
       })
       .then(() =>
-        this.setState({
-          cantidadDeLikes: this.state.cantidadDeLikes - 1,
+        this.setState((prevState) => ({
+          cantidadDeLikes: prevState.cantidadDeLikes - 1,
           propioLike: false,
-        })
+        }))
       )
       .catch((e) => console.log(e));
   }
 
   borrarPosteo() {
+    const { postData } = this.props;
     const currentUser = auth.currentUser;
 
     if (currentUser && currentUser.email) {
       const currentUserEmail = currentUser.email;
 
-      if (this.props.postData.data.email === currentUserEmail) {
-        const postId = this.props.postData.id;
-
+      if (postData.data.email === currentUserEmail) {
         db.collection('posts')
-          .doc(postId)
+          .doc(postData.id)
           .delete()
           .then(() => {
             console.log('Posteo borrado exitosamente.');
@@ -80,38 +91,48 @@ class Posteo extends Component {
   addComment() {
     const currentUser = auth.currentUser;
 
-    if (currentUser && currentUser.displayName) {
+    if (currentUser && currentUser.displayName && this.state.newComment.trim() !== '') {
       const newComment = {
         userName: currentUser.displayName,
-        comentario: this.state.newComment,
+        comment: this.state.newComment,
+        createdAt: new Date(),
       };
 
-      const updatedComments = [...this.state.comments, newComment];
-
-      db.collection('posts')
-        .doc(this.props.postData.id)
-        .update({
-          comments: updatedComments,
-        })
-        .then(() => {
-          this.setState({
-            comments: updatedComments,
-            newComment: '',
-          });
-          console.log('Comentario agregado correctamente.');
-        })
-        .catch((error) => {
-          console.error('Error al agregar el comentario:', error);
-        });
+      // Actualiza el estado de comentarios
+      this.setState(
+        (prevState) => ({
+          comments: [...prevState.comments, newComment],
+          newComment: '', // Limpiar el campo del nuevo comentario
+        }),
+        () => {
+          // Actualizar la colección en la base de datos después de actualizar el estado
+          db.collection('posts')
+            .doc(this.props.postData.id)
+            .update({
+              comments: this.state.comments,
+            })
+            .then(() => {
+              console.log('Comentario agregado correctamente.');
+            })
+            .catch((error) => {
+              console.error('Error al agregar el comentario:', error);
+            });
+        }
+      );
     } else {
-      console.error('No hay un usuario autenticado o el nombre de usuario es nulo.');
+      console.warn(
+        'No hay un usuario autenticado, el nombre de usuario es nulo o el comentario está vacío.'
+      );
+      // Mostrar un mensaje al usuario informándole que necesita estar autenticado y agregar un comentario válido.
     }
   }
 
   render() {
+    const { postData } = this.props;
+
     return (
       <View>
-        {this.props.postData.data.email === auth.currentUser.email ? (
+        {postData.data.email === auth.currentUser.email ? (
           <TouchableOpacity onPress={() => this.borrarPosteo()}>
             <Text>Borrar Posteo</Text>
           </TouchableOpacity>
@@ -120,20 +141,16 @@ class Posteo extends Component {
         )}
 
         <View>
-          <Image
-            style={styles.imagen}
-            source={{ uri: this.props.postData.data.imageUrl }}
-            resizeMode="cover"
-          />
-          <Text style={styles.description}>{this.props.postData.data.description}</Text>
+          <Image style={styles.imagen} source={{ uri: postData.data.imageUrl }} resizeMode="cover" />
+          <Text style={styles.description}>{postData.data.description}</Text>
 
           {this.state.propioLike ? (
             <TouchableOpacity onPress={() => this.dislike()}>
-              <Text>Dislike</Text>
+              <Text>👎 No me gusta</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={() => this.like()}>
-              <Text>Like</Text>
+              <Text>👍 Me gusta</Text>
             </TouchableOpacity>
           )}
 
@@ -141,11 +158,7 @@ class Posteo extends Component {
         </View>
 
         <View>
-          <TouchableOpacity
-            onPress={() =>
-              this.props.navigation.navigate('Comments', { id: this.props.postData.id })
-            }
-          >
+          <TouchableOpacity onPress={() => this.props.navigation.navigate('Comments', { comments: this.state.comments })}>
             <Text>Ver Comentarios</Text>
           </TouchableOpacity>
           <Text>Comentarios: {this.state.comments.length}</Text>
@@ -158,15 +171,19 @@ class Posteo extends Component {
             value={this.state.newComment}
             onChangeText={(text) => this.setState({ newComment: text })}
           />
-          <Button title="Comentar" onPress={() => this.addComment()} />
+          <Button
+            title="Comentar"
+            onPress={() => this.addComment()}
+            disabled={this.state.newComment.trim() === ''}
+          />
 
           {/* Mostrar todos los comentarios */}
           <FlatList
             data={this.state.comments}
-            keyExtractor={(comment) => comment.id.toString()}
+            keyExtractor={(item, index) => index.toString()} // Usamos el índice como clave en lugar de "id"
             renderItem={({ item }) => (
               <Text>
-                {item.userName}: {item.comentario}
+                {item.userName}: {item.comment}
               </Text>
             )}
           />
@@ -178,9 +195,9 @@ class Posteo extends Component {
 
 const styles = StyleSheet.create({
   imagen: {
-    width: "50vh",
-    height: "50vh",
-    backgroundColor: "red"
+    width: '50vh',
+    height: '50vh',
+    backgroundColor: 'red',
   },
   description: {
     fontSize: 16,
@@ -188,4 +205,3 @@ const styles = StyleSheet.create({
 });
 
 export default Posteo;
-

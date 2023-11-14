@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { auth, db } from '../../firebase/config';
 import Post from '../../components/Post/Post';
+import { useNavigation } from '@react-navigation/native';
+import UserSearch from '../UserSearch/UserSearch';
 
 class Profile extends Component {
   constructor() {
@@ -97,6 +99,13 @@ class Profile extends Component {
             <TouchableOpacity style={styles.logoutButton} onPress={this.handleLogout}>
               <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={() => this.props.navigation.navigate('Buscar Usuarios')}
+            >
+              <Text style={styles.searchButtonText}>Buscar Usuarios</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -152,6 +161,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  searchButton: {
+    backgroundColor: '#3498db',
+    padding: 10,
+    borderRadius: 5,
+    alignSelf: 'flex-end',
+    marginTop: 10,
+  },
+  searchButtonText: {
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
