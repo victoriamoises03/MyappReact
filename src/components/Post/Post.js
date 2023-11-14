@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Image, FlatList, Alert } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Image, FlatList, TextInput, Button, Alert } from 'react-native';
 import { auth, db } from '../../firebase/config';
-
-// Importamos la cámara
-import Camara from '../../components/Camara/Camara';
 
 class Posteo extends Component {
   constructor(props) {
@@ -11,7 +8,8 @@ class Posteo extends Component {
     this.state = {
       cantidadDeLikes: this.props.postData.data.likes.length,
       propioLike: false,
-      comments: this.props.postData.data.comments,  // Corregido a "comments"
+      comments: this.props.postData.data.comments,
+      newComment: '',
     };
   }
 
@@ -54,25 +52,60 @@ class Posteo extends Component {
   }
 
   borrarPosteo() {
-    Alert.alert(
-      'Confirmar',
-      '¿Estás seguro de que quieres borrar el posteo?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Borrar',
-          onPress: () => {
-            db.collection('posts')
-              .doc(this.props.postData.id)
-              .delete()
-              .catch((e) => console.log(e));
-          },
-        },
-      ]
-    );
+    const currentUser = auth.currentUser;
+
+    if (currentUser && currentUser.email) {
+      const currentUserEmail = currentUser.email;
+
+      if (this.props.postData.data.email === currentUserEmail) {
+        const postId = this.props.postData.id;
+
+        db.collection('posts')
+          .doc(postId)
+          .delete()
+          .then(() => {
+            console.log('Posteo borrado exitosamente.');
+          })
+          .catch((error) => {
+            console.error('Error al borrar el posteo:', error);
+          });
+      } else {
+        Alert.alert('Acción no permitida', 'No puedes borrar el posteo de otro usuario.');
+      }
+    } else {
+      console.log('No hay un usuario autenticado o el correo electrónico es nulo.');
+    }
+  }
+
+  addComment() {
+    const currentUser = auth.currentUser;
+
+    if (currentUser && currentUser.displayName) {
+      const newComment = {
+        userName: currentUser.displayName,
+        comentario: this.state.newComment,
+      };
+
+      const updatedComments = [...this.state.comments, newComment];
+
+      db.collection('posts')
+        .doc(this.props.postData.id)
+        .update({
+          comments: updatedComments,
+        })
+        .then(() => {
+          this.setState({
+            comments: updatedComments,
+            newComment: '',
+          });
+          console.log('Comentario agregado correctamente.');
+        })
+        .catch((error) => {
+          console.error('Error al agregar el comentario:', error);
+        });
+    } else {
+      console.error('No hay un usuario autenticado o el nombre de usuario es nulo.');
+    }
   }
 
   render() {
@@ -89,7 +122,7 @@ class Posteo extends Component {
         <View>
           <Image
             style={styles.imagen}
-            source={{ uri: this.props.postData.data.imageUrl }}  // Corregido a "imageUrl"
+            source={{ uri: this.props.postData.data.imageUrl }}
             resizeMode="cover"
           />
           <Text style={styles.description}>{this.props.postData.data.description}</Text>
@@ -118,15 +151,26 @@ class Posteo extends Component {
           <Text>Comentarios: {this.state.comments.length}</Text>
         </View>
 
-        <FlatList
-          data={this.state.comments.slice(0, 3)}
-          keyExtractor={(comment) => comment.id.toString()}
-          renderItem={({ item }) => (
-            <Text>
-              {item.userName}: <Text>{typeof item.comentario === 'string' ? item.comentario : ''}</Text>
-            </Text>
-          )}
-        />
+        <View>
+          {/* Agregar un nuevo comentario */}
+          <TextInput
+            placeholder="Añadir un comentario..."
+            value={this.state.newComment}
+            onChangeText={(text) => this.setState({ newComment: text })}
+          />
+          <Button title="Comentar" onPress={() => this.addComment()} />
+
+          {/* Mostrar todos los comentarios */}
+          <FlatList
+            data={this.state.comments}
+            keyExtractor={(comment) => comment.id.toString()}
+            renderItem={({ item }) => (
+              <Text>
+                {item.userName}: {item.comentario}
+              </Text>
+            )}
+          />
+        </View>
       </View>
     );
   }
@@ -134,8 +178,9 @@ class Posteo extends Component {
 
 const styles = StyleSheet.create({
   imagen: {
-    width: 100,
-    height: 100,
+    width: "50vh",
+    height: "50vh",
+    backgroundColor: "red"
   },
   description: {
     fontSize: 16,
@@ -143,3 +188,4 @@ const styles = StyleSheet.create({
 });
 
 export default Posteo;
+

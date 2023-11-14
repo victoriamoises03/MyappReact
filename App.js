@@ -5,13 +5,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; //  iconos
+import { AsyncStorage } from 'react-native';
 
-
-import Register from './src/screens/Register/Register';
+import Register from './src/screens/register/register';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
 import PostForm from './src/screens/PostForm/PostForm';
 import Profile from './src/screens/Profile/Profile';
+//import Comments from './src/screens/Comments/Comments';
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -46,6 +48,7 @@ function TabNavigator() {
           ),
         }}
         />
+        
     </Tab.Navigator>
     
   );

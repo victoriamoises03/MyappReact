@@ -12,7 +12,7 @@ class PostForm extends Component {
       imageUrl: "",  // Corregido a "imageUrl"
       description: "",
       createdAt: "",
-      showCamera: true,
+      mostrarCamara: true,
       likes: [],
       comments: [],  // Corregido a "comments"
     };
@@ -27,27 +27,27 @@ class PostForm extends Component {
       comments: [],
       createdAt: new Date(),
     })
-    .then(() => {
-      this.setState({
-        description: "",
-        imageUrl: "",  // Corregido a "imageUrl"
-        createdAt: "",
-        showCamera: true,
-        likes: [],
-        comments: [],
-      });
+      .then(() => {
+        this.setState({
+          description: "",
+          imageUrl: "",  // Corregido a "imageUrl"
+          createdAt: "",
+          mostrarCamara: true,
+          likes: [],
+          comments: [],
+        });
 
-      this.props.navigation.navigate("Home");
-    })
-    .catch(error => {
-      console.error("Error al crear el posteo:", error);
-    });
+        this.props.navigation.navigate("Home");
+      })
+      .catch(error => {
+        console.error("Error al crear el posteo:", error);
+      });
   }
 
   onImageUpload(url) {
     this.setState({
       imageUrl: url,  // Corregido a "imageUrl"
-      showCamera: false,
+      mostrarCamara: false,
     });
   }
 
@@ -59,26 +59,35 @@ class PostForm extends Component {
         </Text>
 
         <View>
-          {this.state.showCamera ? (
-            <Camara onImageUpload={url => this.onImageUpload(url)} />
-          ) : (
-            <View>
-              <TextInput
-                placeholder='Agrega una descripción'
-                keyboardType='default'
-                onChangeText={(text) => this.setState({ description: text })}
-                value={this.state.description}
-              />
+          {
+            this.state.mostrarCamara ?
+              <Camara onImageUpload={url => this.onImageUpload(url)} />
+              :
+              <View>
+                <View>
+                  <TextInput
+                    placeholder='Agrega una descripción'
+                    keyboardType='default'
+                    onChangeText={text => this.setState({ description: text })}
+                    value={this.state.description}
+                  />
 
-              <TouchableOpacity onPress={() => this.createPost()}>
-                Postear
-              </TouchableOpacity>
-            </View>
-          )}
+                  <TouchableOpacity onPress={() => this.createPost()}>
+                    <Text>Postear</Text>
+                  </TouchableOpacity>
+
+                </View>
+              </View>
+          }
+
+
+
         </View>
       </View>
     );
   }
 }
+
+
 
 export default PostForm;

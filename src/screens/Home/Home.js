@@ -14,9 +14,9 @@ class Home extends Component {
   componentDidMount() {
     // Consulta la base de datos para obtener las publicaciones ordenadas por fecha descendente.
     db.collection('posts')
-      .orderBy('timestamp', 'desc')
+      .orderBy('createdAt', 'desc')
       .onSnapshot((snapshot) => {
-        const posts = snapshot.docs.map((doc) => ({
+        let posts = snapshot.docs.map((doc) => ({
           id: doc.id,
           data: doc.data(),
         }));
@@ -27,7 +27,6 @@ class Home extends Component {
   }
 
   render() {
-    const { posteos } = this.state;
 
     return (
       <View style={styles.container}>
@@ -35,10 +34,11 @@ class Home extends Component {
         <TouchableOpacity style={styles.logoutButton} onPress={() => auth.signOut()}>
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
+        
         <FlatList
-          data={posteos}
+          data={this.state.posteos}
           keyExtractor={(onePost) => onePost.id.toString()}
-          renderItem={({ item }) => <Post postData={item} />}
+          renderItem={({ item }) => <Post postData={item}  navigation={this.props.navigation}/>}
         />
       </View>
     );
