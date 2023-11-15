@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { auth, db } from '../../firebase/config';
 import Post from '../../components/Post/Post';
-import { useNavigation } from '@react-navigation/native';
-import UserSearch from '../UserSearch/UserSearch';
 
 class Profile extends Component {
   constructor() {
@@ -11,45 +9,35 @@ class Profile extends Component {
     this.state = {
       user: null,
       userPosts: [],
+      loading: true, // Agrega un estado de carga
     };
   }
 
   componentDidMount() {
     this.unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Realiza una consulta a la base de datos para obtener el nombre de usuario
-        db.collection('users')
-          .doc(user.uid)
-          .get()
-          .then((userDoc) => {
-            if (userDoc.exists) {
-              const userData = userDoc.data();
-              this.setState({ user: { ...user, userName: userData.userName } });
-            }
-          })
-          .catch((error) => {
-            console.error('Error al obtener el nombre de usuario:', error.message);
-          });
-  
-        // Consultar la base de datos para obtener los posteos del usuario actual
         db.collection('posts')
-          .where('email', '==', user.userName) 
+          .where('userId', '==', user.uid)
           .orderBy('createdAt', 'desc')
-          .onSnapshot((snapshot) => {
-            console.log('Documentos de posts:', snapshot.docs);
+          .get()
+          .then((snapshot) => {
             const posts = snapshot.docs.map((doc) => ({
               id: doc.id,
               data: doc.data(),
             }));
-            console.log('Posts recuperados:', posts);
-            this.setState({ userPosts: posts });
+            console.log('Posteos del usuario:', posts);
+            this.setState({ user: user, userPosts: posts, loading: false });
+          })
+          .catch((error) => {
+            console.error('Error al obtener los posteos del usuario:', error.message);
+            this.setState({ loading: false });
           });
       } else {
-        this.setState({ user: null, userPosts: [] });
+        console.log("Usuario no autenticado. Redirigiendo o mostrando un indicador de carga...");
+        this.setState({ user: null, userPosts: [], loading: false });
       }
     });
   }
-  
 
   componentWillUnmount() {
     if (this.unsubscribe) {
@@ -83,7 +71,11 @@ class Profile extends Component {
   };
 
   render() {
-    const { user, userPosts } = this.state;
+    const { user, userPosts, loading } = this.state;
+
+    if (loading) {
+      return <Text>Cargando...</Text>;
+    }
 
     return (
       <View style={styles.container}>
@@ -93,7 +85,7 @@ class Profile extends Component {
               source={{ uri: user.photoURL }}
               style={styles.profileImage}
             />
-            <Text style={styles.usernameText}>Nombre de usuario: {user.userName}</Text>
+            <Text style={styles.usernameText}>Nombre de usuario: {user.displayName}</Text>
             <Text style={styles.emailText}>Email: {user.email}</Text>
             <Text style={styles.postCountText}>
               Cantidad total de posteos: {userPosts.length}
@@ -114,12 +106,12 @@ class Profile extends Component {
 
         <FlatList
           data={userPosts}
-          keyExtractor={(onePost) => onePost.id.toString()}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Post
               postData={item}
               onDelete={() => this.handleDeletePost(item.id)}
-              isOwnPost={item.data.userId === user.uid}
+              isOwnPost={item.data.userId === user?.uid || false}
             />
           )}
         />

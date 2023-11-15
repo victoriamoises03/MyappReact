@@ -87,17 +87,16 @@ class Posteo extends Component {
       console.log('No hay un usuario autenticado o el correo electrónico es nulo.');
     }
   }
-
   addComment() {
     const currentUser = auth.currentUser;
-
-    if (currentUser && currentUser.displayName && this.state.newComment.trim() !== '') {
+  
+    if (currentUser && currentUser.providerData && currentUser.providerData.length > 0) {
       const newComment = {
-        userName: currentUser.displayName,
+        userName: currentUser.providerData[0].displayName,
         comment: this.state.newComment,
         createdAt: new Date(),
       };
-
+  
       // Actualiza el estado de comentarios
       this.setState(
         (prevState) => ({
@@ -120,12 +119,11 @@ class Posteo extends Component {
         }
       );
     } else {
-      console.warn(
-        'No hay un usuario autenticado, el nombre de usuario es nulo o el comentario está vacío.'
-      );
+      console.warn('No hay un usuario autenticado o la información del usuario es nula o el comentario está vacío.');
       // Mostrar un mensaje al usuario informándole que necesita estar autenticado y agregar un comentario válido.
     }
   }
+  
 
   render() {
     const { postData } = this.props;
@@ -137,7 +135,7 @@ class Posteo extends Component {
             <Text>Borrar Posteo</Text>
           </TouchableOpacity>
         ) : (
-          <Text>No puedes realizar esta acción.</Text>
+          <Text></Text>
         )}
 
         <View>

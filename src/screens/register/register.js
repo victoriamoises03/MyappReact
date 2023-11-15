@@ -40,6 +40,9 @@ class Register extends Component {
       .createUserWithEmailAndPassword(email, password)
       .then((authUser) => {
         // Usuario registrado con éxito- redirigir a la pantalla de inicio de sesión.
+        authUser.user.updateProfile({
+          displayName: userName,
+        });
 
         // Agrega el usuario a la colección "users" con datos adicionales.
         db.collection('users').doc(authUser.user.uid).set({

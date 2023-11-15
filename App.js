@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; //  iconos
 import { AsyncStorage } from 'react-native';
 
-import Register from './src/screens/register/register';
+import Register from './src/screens/Register/register';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
 import PostForm from './src/screens/PostForm/PostForm';

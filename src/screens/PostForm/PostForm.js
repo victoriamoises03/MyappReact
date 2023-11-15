@@ -19,9 +19,11 @@ class PostForm extends Component {
   }
 
   createPost() {
+    console.log('ID del usuario autenticado:', auth.currentUser.uid);
     db.collection("posts").add({
+      userId: auth.currentUser.uid,
       email: auth.currentUser.email,
-      imageUrl: this.state.imageUrl,  // Corregido a "imageUrl"
+      imageUrl: this.state.imageUrl,
       description: this.state.description,
       likes: [],
       comments: [],
@@ -30,19 +32,20 @@ class PostForm extends Component {
       .then(() => {
         this.setState({
           description: "",
-          imageUrl: "",  // Corregido a "imageUrl"
+          imageUrl: "",
           createdAt: "",
           mostrarCamara: true,
           likes: [],
           comments: [],
         });
-
+  
         this.props.navigation.navigate("Home");
       })
       .catch(error => {
         console.error("Error al crear el posteo:", error);
       });
   }
+  
 
   onImageUpload(url) {
     this.setState({
