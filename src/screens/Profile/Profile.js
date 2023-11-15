@@ -19,8 +19,6 @@ class Profile extends Component {
   componentDidMount() {
     this.unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        console.log("Usuario autenticado:", auth.currentUser);
-  
         // Obtener posteos específicos del usuario
         db.collection('posts')
           .where('userId', '==', user.uid)
@@ -38,6 +36,7 @@ class Profile extends Component {
             console.error('Error al obtener los posteos del usuario:', error.message);
           });
       } else {
+        console.log("Usuario no autenticado. Redirigiendo o mostrando un indicador de carga...");
         this.setState({ user: null, userPosts: [] });
       }
     });
@@ -77,6 +76,7 @@ class Profile extends Component {
 
   render() {
     const { user, userPosts } = this.state;
+    console.log('Usuario:', user);
 
     return (
       <View style={styles.container}>
