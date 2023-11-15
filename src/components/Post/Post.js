@@ -20,6 +20,7 @@ class Posteo extends Component {
       propioLike: false,
       comments: this.props.postData.data.comments || [],
       newComment: '',
+      user: this.props.user, // Agregamos el usuario al estado
     };
   }
 
@@ -127,17 +128,16 @@ class Posteo extends Component {
 
   render() {
     const { postData, user } = this.props;
-
+    console.log (postData)
     return (
       <View>
         {postData.data.email === auth.currentUser.email ? (
-          
-          <TouchableOpacity onPress={() => this.borrarPosteo()}>
-            <Text>Borrar Posteo</Text>
-          </TouchableOpacity>
+      <TouchableOpacity onPress={() => this.borrarPosteo()}>
+        <Text>Borrar Posteo</Text>
+      </TouchableOpacity>
         ) : (
-          <Text></Text>
-        )}
+      <Text>Publicado por: {postData.data.email} </Text>
+      )}
 
         <View>
           <Image style={styles.imagen} source={{ uri: postData.data.imageUrl }} resizeMode="cover" />
