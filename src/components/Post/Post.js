@@ -126,11 +126,12 @@ class Posteo extends Component {
   
 
   render() {
-    const { postData } = this.props;
+    const { postData, user } = this.props;
 
     return (
       <View>
         {postData.data.email === auth.currentUser.email ? (
+          
           <TouchableOpacity onPress={() => this.borrarPosteo()}>
             <Text>Borrar Posteo</Text>
           </TouchableOpacity>

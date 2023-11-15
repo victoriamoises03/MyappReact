@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { auth, db } from '../../firebase/config';
 import Post from '../../components/Post/Post';
-import { useNavigation } from '@react-navigation/native';
-import UserSearch from '../UserSearch/UserSearch';
 
 class Profile extends Component {
   constructor() {
@@ -11,18 +9,16 @@ class Profile extends Component {
     this.state = {
       user: null,
       userPosts: [],
+      loading: true, // Agrega un estado de carga
     };
   }
 
-
-  
   componentDidMount() {
     this.unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Obtener posteos específicos del usuario
         db.collection('posts')
           .where('userId', '==', user.uid)
-          .orderBy('createdAt', 'desc')  // Asegúrate de ordenar por el campo correcto
+          .orderBy('createdAt', 'desc')
           .get()
           .then((snapshot) => {
             const posts = snapshot.docs.map((doc) => ({
@@ -30,18 +26,18 @@ class Profile extends Component {
               data: doc.data(),
             }));
             console.log('Posteos del usuario:', posts);
-            this.setState({ userPosts: posts });
+            this.setState({ user: user, userPosts: posts, loading: false });
           })
           .catch((error) => {
             console.error('Error al obtener los posteos del usuario:', error.message);
+            this.setState({ loading: false });
           });
       } else {
         console.log("Usuario no autenticado. Redirigiendo o mostrando un indicador de carga...");
-        this.setState({ user: null, userPosts: [] });
+        this.setState({ user: null, userPosts: [], loading: false });
       }
     });
   }
-  
 
   componentWillUnmount() {
     if (this.unsubscribe) {
@@ -75,8 +71,11 @@ class Profile extends Component {
   };
 
   render() {
-    const { user, userPosts } = this.state;
-    console.log('Usuario:', user);
+    const { user, userPosts, loading } = this.state;
+
+    if (loading) {
+      return <Text>Cargando...</Text>;
+    }
 
     return (
       <View style={styles.container}>
@@ -86,7 +85,7 @@ class Profile extends Component {
               source={{ uri: user.photoURL }}
               style={styles.profileImage}
             />
-            <Text style={styles.usernameText}>Nombre de usuario: {user.userName}</Text>
+            <Text style={styles.usernameText}>Nombre de usuario: {user.displayName}</Text>
             <Text style={styles.emailText}>Email: {user.email}</Text>
             <Text style={styles.postCountText}>
               Cantidad total de posteos: {userPosts.length}
