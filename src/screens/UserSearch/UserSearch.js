@@ -62,21 +62,21 @@ handleSearch = () => {
         </TouchableOpacity>
         {noResults && <Text style={styles.noResultsText}>No hay usuarios que coincidan.</Text>}
         <FlatList
-          data={searchResults}
-          keyExtractor={(user) => user.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.resultItem}
-              onPress={() => {
-                // Navegar al perfil del usuario, implementar según enrutador
-                console.log('Ir al perfil de', item.data.userName);
-              }}
-            >
-              <Text>{item.data.userName}</Text>
-            </TouchableOpacity>
-          )}
-          keyboardShouldPersistTaps="handled"
-        />
+      data={searchResults}
+      keyExtractor={(user) => user.id}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          style={styles.resultItem}
+          onPress={() => {
+            // Navegar al perfil del usuario
+            navigation.navigate('UserProfile', { userName: item.data.userName });
+          }}
+        >
+          <Text>{item.data.userName}</Text>
+        </TouchableOpacity>
+      )}
+      keyboardShouldPersistTaps="handled"
+    />
         {loading && <ActivityIndicator size="large" color="#3498db" />}
       </View>
     );

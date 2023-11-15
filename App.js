@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from './src/firebase/config';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; //  iconos
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; // iconos
 import { AsyncStorage } from 'react-native';
 
 import Register from './src/screens/Register/register';
@@ -13,11 +13,27 @@ import Home from './src/screens/Home/Home';
 import PostForm from './src/screens/PostForm/PostForm';
 import Profile from './src/screens/Profile/Profile';
 import UserSearch from './src/screens/UserSearch/UserSearch';
-//import Comments from './src/screens/Comments/Comments';
-
+import UserProfile from './src/screens/UserProfile/UserProfile';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+function ProfileStackNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="MiPerfil"
+        component={Profile}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PerfilDeUsuario"
+        component={UserProfile}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 function TabNavigator() {
   return (
@@ -41,15 +57,15 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Mi perfil"
-        component={Profile}
+        name="Perfil"
+        component={ProfileStackNavigator}
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome5 name="user" color={color} size={size} />
           ),
         }}
-        />
-        <Tab.Screen
+      />
+      <Tab.Screen
         name="Buscar Usuarios"
         component={UserSearch}
         options={{
@@ -58,9 +74,7 @@ function TabNavigator() {
           ),
         }}
       />
-        
     </Tab.Navigator>
-    
   );
 }
 
@@ -121,7 +135,6 @@ export default function App() {
               component={Login}
               options={{ headerShown: false }}
             />
-           
           </>
         )}
       </Stack.Navigator>

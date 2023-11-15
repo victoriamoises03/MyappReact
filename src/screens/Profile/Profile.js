@@ -86,6 +86,7 @@ class Profile extends Component {
               style={styles.profileImage}
             />
             <Text style={styles.usernameText}>Nombre de usuario: {user.displayName}</Text>
+            
             <Text style={styles.emailText}>Email: {user.email}</Text>
             <Text style={styles.postCountText}>
               Cantidad total de posteos: {userPosts.length}
