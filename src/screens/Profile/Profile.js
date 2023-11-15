@@ -74,50 +74,61 @@ class Profile extends Component {
     const { user, userPosts, loading } = this.state;
 
     if (loading) {
-      return <Text>Cargando...</Text>;
+      return (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Cargando...</Text>
+        </View>
+      );
     }
 
-    return (
-      <View style={styles.container}>
-        {user && (
-          <View style={styles.userInfoContainer}>
-            <Image
-              source={{ uri: user.photoURL }}
-              style={styles.profileImage}
-            />
-            <Text style={styles.usernameText}>Nombre de usuario: {user.displayName}</Text>
-            
-            <Text style={styles.emailText}>Email: {user.email}</Text>
-            <Text style={styles.postCountText}>
-              Cantidad total de posteos: {userPosts.length}
-            </Text>
+   // ... (resto del código)
 
-            <TouchableOpacity style={styles.logoutButton} onPress={this.handleLogout}>
-              <Text style={styles.logoutButtonText}>Logout</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.searchButton}
-              onPress={() => this.props.navigation.navigate('Buscar Usuarios')}
-            >
-              <Text style={styles.searchButtonText}>Buscar Usuarios</Text>
-            </TouchableOpacity>
-          </View>
+return (
+  <View style={styles.container}>
+    {user && (
+      <View style={styles.userInfoContainer}>
+        {user.photoURL && (
+          <Image source={{ uri: user.photoURL }} style={styles.profileImage} />
         )}
+        {user.displayName && (
+          <Text style={styles.usernameText}>Nombre de usuario: {user.displayName}</Text>
+        )}
+        {user.bio && (
+          <Text style={styles.bio}>Biografía: {user.bio}</Text>
+        )}
+        {user.profileImage && (
+          <Text style={styles.profileImage}>Imagen de Perfil: {user.profileImage}</Text>
+        )}
+        <Text style={styles.emailText}>Email: {user.email}</Text>
+        <Text style={styles.postCountText}>Cantidad total de posteos: {userPosts.length}</Text>
 
-        <FlatList
-          data={userPosts}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <Post
-              postData={item}
-              onDelete={() => this.handleDeletePost(item.id)}
-              isOwnPost={item.data.userId === user?.uid || false}
-            />
-          )}
-        />
+        <TouchableOpacity style={styles.logoutButton} onPress={this.handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={() => this.props.navigation.navigate('Buscar Usuarios')}
+        >
+          <Text style={styles.searchButtonText}>Buscar Usuarios</Text>
+        </TouchableOpacity>
       </View>
-    );
+    )}
+
+    <FlatList
+      data={userPosts}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <Post
+          postData={item}
+          onDelete={() => this.handleDeletePost(item.id)}
+          isOwnPost={item.data.userId === user?.uid || false}
+        />
+      )}
+    />
+  </View>
+);
+
   }
 }
 
@@ -135,20 +146,27 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginVertical: 10,
+    marginVertical: 1,
   },
   usernameText: {
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 5,
   },
+  bio: {
+    fontSize: 16,
+    marginVertical: 5,
+    color: '#555',
+  },
   emailText: {
     fontSize: 16,
     marginVertical: 5,
+    color: '#555',
   },
   postCountText: {
     fontSize: 16,
     marginVertical: 5,
+    color: '#555',
   },
   logoutButton: {
     backgroundColor: '#3498db',
@@ -172,6 +190,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
   },
 });
 
