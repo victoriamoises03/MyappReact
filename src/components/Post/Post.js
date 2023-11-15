@@ -137,7 +137,7 @@ class Posteo extends Component {
             <Text>Borrar Posteo</Text>
           </TouchableOpacity>
         ) : (
-          <Text>No puedes realizar esta acción.</Text>
+          <Text></Text>
         )}
 
         <View>

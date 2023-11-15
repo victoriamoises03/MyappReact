@@ -14,39 +14,35 @@ class Profile extends Component {
     };
   }
 
+
+  
   componentDidMount() {
     this.unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Realiza una consulta a la base de datos para obtener el nombre de usuario
-        db.collection('users')
-          .doc(user.uid)
-          .get()
-          .then((userDoc) => {
-            if (userDoc.exists) {
-              const userData = userDoc.data();
-              this.setState({ user: { ...user, userName: userData.userName } });
-            }
-          })
-          .catch((error) => {
-            console.error('Error al obtener el nombre de usuario:', error.message);
-          });
-
-        // Consultar la base de datos para obtener los posteos del usuario actual
+        console.log("Usuario autenticado:", auth.currentUser);
+  
+        // Obtener posteos específicos del usuario
         db.collection('posts')
           .where('userId', '==', user.uid)
-          .orderBy('timestamp', 'desc')
-          .onSnapshot((snapshot) => {
+          .orderBy('createdAt', 'desc')  // Asegúrate de ordenar por el campo correcto
+          .get()
+          .then((snapshot) => {
             const posts = snapshot.docs.map((doc) => ({
               id: doc.id,
               data: doc.data(),
             }));
+            console.log('Posteos del usuario:', posts);
             this.setState({ userPosts: posts });
+          })
+          .catch((error) => {
+            console.error('Error al obtener los posteos del usuario:', error.message);
           });
       } else {
         this.setState({ user: null, userPosts: [] });
       }
     });
   }
+  
 
   componentWillUnmount() {
     if (this.unsubscribe) {
@@ -111,12 +107,12 @@ class Profile extends Component {
 
         <FlatList
           data={userPosts}
-          keyExtractor={(onePost) => onePost.id.toString()}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Post
               postData={item}
               onDelete={() => this.handleDeletePost(item.id)}
-              isOwnPost={item.data.userId === user.uid}
+              isOwnPost={item.data.userId === user?.uid || false}
             />
           )}
         />
