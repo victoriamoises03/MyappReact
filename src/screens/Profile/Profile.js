@@ -30,16 +30,18 @@ class Profile extends Component {
           .catch((error) => {
             console.error('Error al obtener el nombre de usuario:', error.message);
           });
-
+  
         // Consultar la base de datos para obtener los posteos del usuario actual
         db.collection('posts')
-          .where('userId', '==', user.uid)
-          .orderBy('timestamp', 'desc')
+          .where('email', '==', user.userName) 
+          .orderBy('createdAt', 'desc')
           .onSnapshot((snapshot) => {
+            console.log('Documentos de posts:', snapshot.docs);
             const posts = snapshot.docs.map((doc) => ({
               id: doc.id,
               data: doc.data(),
             }));
+            console.log('Posts recuperados:', posts);
             this.setState({ userPosts: posts });
           });
       } else {
@@ -47,6 +49,7 @@ class Profile extends Component {
       }
     });
   }
+  
 
   componentWillUnmount() {
     if (this.unsubscribe) {
