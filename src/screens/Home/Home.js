@@ -31,6 +31,7 @@ class Home extends Component {
     return (
       <View style={styles.container}>
         <Text style={styles.heading}>Publicaciones Recientes</Text>
+        <Text></Text>
         <TouchableOpacity style={styles.logoutButton} onPress={() => auth.signOut()}>
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>

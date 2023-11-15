@@ -30,12 +30,12 @@ class Register extends Component {
   // Función p/ realizar el registro 
   register = () => {
     const { email, password, userName, bio, profileImage, rememberMe } = this.state;
-
+  
     if (!email || !password || !userName) {
       this.setState({ error: 'Por favor, complete todos los campos obligatorios.' });
       return;
     }
-
+  
     auth
       .createUserWithEmailAndPassword(email, password)
       .then((authUser) => {
@@ -43,27 +43,30 @@ class Register extends Component {
         authUser.user.updateProfile({
           displayName: userName,
         });
-
+  
+        console.log('DisplayName después de la actualización de perfil:', authUser.user.displayName);
+  
         // Agrega el usuario a la colección "users" con datos adicionales.
         db.collection('users').doc(authUser.user.uid).set({
           userName,
           bio,
           profileImage,
         });
-
+  
         // Guarda el estado de "Remember Me" en AsyncStorage si está ok
         if (rememberMe) {
           AsyncStorage.setItem('rememberMe', 'true');
         } else {
           AsyncStorage.removeItem('rememberMe');
         }
-
+  
         this.props.navigation.navigate('Login');
       })
       .catch((error) => {
         this.setState({ error: error.message });
       });
   }
+  
 
   render() {
     return (
