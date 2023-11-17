@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import reactDom from 'react-dom';
 import {
   Text,
   View,
@@ -21,6 +22,7 @@ class Posteo extends Component {
       comments: this.props.postData.data.comments || [],
       newComment: '',
       user: this.props.user, // Agregamos el usuario al estado
+      isPressed: false,
     };
   }
 
@@ -124,48 +126,54 @@ class Posteo extends Component {
       // Mostrar un mensaje al usuario informándole que necesita estar autenticado y agregar un comentario válido.
     }
   }
-  
 
   render() {
     const { postData, user } = this.props;
-    console.log (postData)
+    console.log(postData);
     return (
-      <View>
+      <TouchableOpacity
+        style={[styles.posteoContainer, this.state.isPressed && styles.posteoContainerHovered]}
+        onPressIn={() => this.setState({ isPressed: true })}
+        onPressOut={() => this.setState({ isPressed: false })}
+      >
         {postData.data.email === auth.currentUser.email ? (
-      <TouchableOpacity onPress={() => this.borrarPosteo()}>
-        <Text>Borrar Posteo</Text>
-      </TouchableOpacity>
+          <TouchableOpacity onPress={() => this.borrarPosteo()}>
+            <Text style={styles.borrarPosteo}>Borrar Posteo</Text>
+          </TouchableOpacity>
         ) : (
-      <Text>Publicado por: {postData.data.email} </Text>
-      )}
+          <Text style={[styles.publicadoPor, this.state.isPressed && styles.publicadoPorHovered]}>
+            Publicado por: {postData.data.email}
+          </Text>
+        )}
 
-        <View>
+        <View style={styles.postContent}>
           <Image style={styles.imagen} source={{ uri: postData.data.imageUrl }} resizeMode="cover" />
           <Text style={styles.description}>{postData.data.description}</Text>
 
           {this.state.propioLike ? (
             <TouchableOpacity onPress={() => this.dislike()}>
-              <Text>👎 No me gusta</Text>
+              <Text style={styles.likeDislikeText}>👎 No me gusta</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={() => this.like()}>
-              <Text>👍 Me gusta</Text>
+              <Text style={styles.likeDislikeText}>👍 Me gusta</Text>
             </TouchableOpacity>
           )}
 
-          <Text>Cantidad de likes: {this.state.cantidadDeLikes}</Text>
+          <Text style={styles.likesCountText}>Cantidad de likes: {this.state.cantidadDeLikes}</Text>
         </View>
 
-        <View>
+        <View style={styles.commentsContainer}>
           <TouchableOpacity onPress={() => this.props.navigation.navigate('Comments', { comments: this.state.comments })}>
-            <Text>Ver Comentarios</Text>
+            <Text style={styles.viewCommentsText}>Ver Comentarios</Text>
           </TouchableOpacity>
-          <Text>Comentarios: {this.state.comments.length}</Text>
+          <Text style={styles.commentsCountText}>Comentarios: {this.state.comments.length}</Text>
         </View>
 
-        <View>
+        <View style={styles.addCommentContainer}>
           {/* Agregar un nuevo comentario */}
           <TextInput
+            style={styles.commentInput}
             placeholder="Añadir un comentario..."
             value={this.state.newComment}
             onChangeText={(text) => this.setState({ newComment: text })}
@@ -179,20 +187,43 @@ class Posteo extends Component {
           {/* Mostrar todos los comentarios */}
           <FlatList
             data={this.state.comments}
-            keyExtractor={(item, index) => index.toString()} // Usamos el índice como clave en lugar de "id"
+            keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <Text>
-                {item.userName}: {item.comment}
+              <Text style={styles.commentText}>
+                <Text style={styles.userNameText}>{item.userName}:</Text> {item.comment}
               </Text>
             )}
           />
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  posteoContainer: {
+    marginBottom: 20,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  posteoContainerHovered: {
+    backgroundColor: '#e0e0e0',
+  },
+  borrarPosteo: {
+    color: 'red',
+  },
+  publicadoPor: {
+    fontStyle: 'italic',
+    marginBottom: 10, 
+    fontWeight: 'bold', 
+  },
+  publicadoPorHovered: {
+    color: 'pink', 
+  },
+  postContent: {
+    marginTop: 10,
+  },
   imagen: {
     width: '50vh',
     height: '50vh',
@@ -200,6 +231,33 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
+  },
+  likeDislikeText: {
+    marginTop: 5,
+  },
+  likesCountText: {
+    marginTop: 5,
+  },
+  commentsContainer: {
+    marginTop: 10,
+  },
+  viewCommentsText: {
+    marginBottom: 5,
+  },
+  commentsCountText: {
+    marginBottom: 10,
+  },
+  addCommentContainer: {
+    marginTop: 10,
+  },
+  commentInput: {
+    marginBottom: 10,
+  },
+  commentText: {
+    marginTop: 5,
+  },
+  userNameText: {
+    fontWeight: 'bold',
   },
 });
 
