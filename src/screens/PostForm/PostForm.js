@@ -9,12 +9,12 @@ class PostForm extends Component {
   constructor() {
     super();
     this.state = {
-      imageUrl: "",  // Corregido a "imageUrl"
+      imageUrl: "",
       description: "",
       createdAt: "",
       mostrarCamara: true,
       likes: [],
-      comments: [],  // Corregido a "comments"
+      comments: [],
     };
   }
 
@@ -38,59 +38,89 @@ class PostForm extends Component {
           likes: [],
           comments: [],
         });
-  
+
         this.props.navigation.navigate("Home");
       })
       .catch(error => {
         console.error("Error al crear el posteo:", error);
       });
   }
-  
 
   onImageUpload(url) {
     this.setState({
-      imageUrl: url,  // Corregido a "imageUrl"
+      imageUrl: url,
       mostrarCamara: false,
     });
   }
 
   render() {
     return (
-      <View>
-        <Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>
           Hacé un posteo nuevo!
         </Text>
 
-        <View>
-          {
-            this.state.mostrarCamara ?
-              <Camara onImageUpload={url => this.onImageUpload(url)} />
-              :
-              <View>
-                <View>
-                  <TextInput
-                    placeholder='Agrega una descripción'
-                    keyboardType='default'
-                    onChangeText={text => this.setState({ description: text })}
-                    value={this.state.description}
-                  />
+        <View style={styles.formContainer}>
+          {this.state.mostrarCamara ? (
+            <Camara onImageUpload={url => this.onImageUpload(url)} />
+          ) : (
+            <View style={styles.postForm}>
+              <TextInput
+                style={styles.input}
+                placeholder='Agrega una descripción'
+                keyboardType='default'
+                onChangeText={text => this.setState({ description: text })}
+                value={this.state.description}
+              />
 
-                  <TouchableOpacity onPress={() => this.createPost()}>
-                    <Text>Postear</Text>
-                  </TouchableOpacity>
-
-                </View>
-              </View>
-          }
-
-
-
+              <TouchableOpacity style={styles.postButton} onPress={() => this.createPost()}>
+                <Text style={styles.postButtonText}>Postear</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     );
   }
 }
 
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  formContainer: {
+    width: '80%',
+  },
+  postForm: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 3,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 20,
+    padding: 10,
+    borderRadius: 5,
+  },
+  postButton: {
+    backgroundColor: '#4285F4',
+    padding: 10,
+    borderRadius: 5,
+  },
+  postButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+  },
+});
 
 export default PostForm;
