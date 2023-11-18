@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './src/firebase/config';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, AsyncStorage } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; // iconos
-import { AsyncStorage } from 'react-native';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { auth } from './src/firebase/config';
+import { useNavigation } from '@react-navigation/native';
 
-import Register from './src/screens/Register/register';
+import Register from './src/screens/Register/Register';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
 import PostForm from './src/screens/PostForm/PostForm';
@@ -27,13 +27,14 @@ function ProfileStackNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="PerfilDeUsuario"
+        name="UserProfile"
         component={UserProfile}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
 }
+
 
 function TabNavigator() {
   return (
@@ -82,15 +83,13 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Intenta recuperar el estado de autenticación desde AsyncStorage.
     const checkRememberMe = async () => {
       try {
         const rememberMe = await AsyncStorage.getItem('rememberMe');
         if (rememberMe === 'true') {
-          // El usuario recordó su sesión anterior, verifica si están autenticados en Firebase.
           const firebaseUser = auth.currentUser;
           if (firebaseUser) {
-            setUser(firebaseUser); // Usuario autenticado, actualiza el estado.
+            setUser(firebaseUser);
           }
         }
       } catch (error) {
@@ -102,28 +101,25 @@ export default function App() {
 
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser); // Usuario autenticado, actualiza el estado.
+        setUser(firebaseUser);
       } else {
-        setUser(null); // Usuario no autenticado, actualiza el estado.
+        setUser(null);
       }
     });
 
-    // Limpia el observador cuando el componente se desmonta.
     return () => unsubscribe();
   }, []);
 
   return (
-    <NavigationContainer style={styles.container}>
+    <NavigationContainer>
       <Stack.Navigator>
         {user ? (
-          // Usuario autenticado, muestra el menú de pestañas.
           <Stack.Screen
             name="Inicio"
             component={TabNavigator}
             options={{ headerShown: false }}
           />
         ) : (
-          // Usuario no autenticado, muestra las pantallas de autenticación.
           <>
             <Stack.Screen
               name="Registro"

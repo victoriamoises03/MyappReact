@@ -1,122 +1,125 @@
-import React, { Component } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { db } from '../../firebase/config';
 
-class UserSearch extends Component {
-  constructor() {
-    super();
-    this.state = {
-      searchQuery: '',
-      searchResults: [],
-      noResults: false,
-      loading: false,
-    };
-  }
+const UserSearch = ({ route }) => {
+  const [usuarios, setUsuarios] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
+  const [resultados, setResultados] = useState([]);
+  const [mensaje, setMensaje] = useState('');
+  const navigation = useNavigation();
 
-handleSearch = () => {
-    const { searchQuery } = this.state;
-  
-    // Realiza la consulta a la colección 'users' para encontrar usuarios que coincidan con la búsqueda.
-    db.collection('users')
-      .where('userName', '>=', searchQuery)
-      .where('userName', '<=', searchQuery + '\uf8ff')
-      .get()
-      .then((querySnapshot) => {
-        const results = querySnapshot.docs.map((doc) => ({
+  useEffect(() => {
+    const unsubscribe = db.collection('users').onSnapshot((docs) => {
+      let users = [];
+      docs.forEach((doc) => {
+        users.push({
           id: doc.id,
           data: doc.data(),
-        }));
-  
-        if (results.length > 0) {
-          this.setState({ searchResults: results, noResults: false });
-        } else {
-          this.setState({ searchResults: [], noResults: true });
-        }
-  
-        // Agrega esta línea para limpiar la barra de búsqueda
-        this.setState({ searchQuery: '' });
-      })
-      .catch((error) => {
-        console.error('Error al buscar usuarios por userName:', error);
+        });
       });
+      setUsuarios(users);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const controlarCambios = (text) => {
+    setBusqueda(text);
   };
-  
 
-  render() {
-    const { searchQuery, searchResults, noResults, loading } = this.state;
+  const buscarUsuarios = () => {
+    const busquedaLower = busqueda.toLowerCase();
 
-    return (
-      <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          placeholder="Buscar por userName"
-          value={searchQuery}
-          onChangeText={(text) => this.setState({ searchQuery: text })}
-        />
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={this.handleSearch}
-          disabled={searchQuery.trim() === ''}
-        >
-          <Text style={styles.searchButtonText}>Buscar</Text>
-        </TouchableOpacity>
-        {noResults && <Text style={styles.noResultsText}>No hay usuarios que coincidan.</Text>}
-        <FlatList
-      data={searchResults}
-      keyExtractor={(user) => user.id}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.resultItem}
-          onPress={() => {
-            // Navegar al perfil del usuario
-            navigation.navigate('UserProfile', { userName: item.data.userName });
-          }}
-        >
-          <Text>{item.data.userName}</Text>
-        </TouchableOpacity>
-      )}
-      keyboardShouldPersistTaps="handled"
-    />
-        {loading && <ActivityIndicator size="large" color="#3498db" />}
-      </View>
+    const resultados = usuarios.filter((usuario) =>
+      usuario.data.userName.toLowerCase().includes(busquedaLower)
     );
-  }
-}
+
+    if (resultados.length === 0) {
+      setResultados([]);
+      setMensaje('No hay resultados que coincidan.');
+    } else {
+      setResultados(resultados);
+      setMensaje('');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        keyboardType="default"
+        placeholder="Buscar por username"
+        onChangeText={(text) => controlarCambios(text)}
+        value={busqueda}
+      />
+      <TouchableOpacity style={styles.button} onPress={() => buscarUsuarios()}>
+        <Text style={styles.buttonText}>Buscar</Text>
+      </TouchableOpacity>
+
+      {mensaje ? (
+        <Text style={styles.message}>{mensaje}</Text>
+      ) : (
+        <FlatList
+          data={resultados}
+          keyExtractor={(user) => user.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.userContainer}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('UserProfile', { userName: item.data.owner })
+                }
+              >
+                <Text style={styles.userName}>User Name: {item.data.userName}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 20,
     backgroundColor: '#fff',
   },
   input: {
     height: 40,
-    borderColor: 'gray',
     borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    paddingHorizontal: 10,
     marginBottom: 10,
-    paddingLeft: 10,
   },
-  searchButton: {
+  button: {
     backgroundColor: '#3498db',
-    padding: 10,
+    paddingVertical: 10,
     borderRadius: 5,
-    alignSelf: 'flex-end',
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  noResultsText: {
-    color: 'red',
+    alignItems: 'center',
     marginBottom: 10,
   },
-  resultItem: {
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  message: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#e74c3c',
+  },
+  userContainer: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
+    borderColor: '#ddd',
     borderRadius: 5,
-    marginBottom: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  userName: {
+    fontSize: 16,
   },
 });
 
